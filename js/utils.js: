@@ -1,0 +1,66 @@
+// js/utils.js
+const utils = {
+    // 格式化日期
+    formatDate(date) {
+        return new Date(date).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+
+    // 显示通知
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
+            type === 'error' ? 'bg-red-500' : 
+            type === 'success' ? 'bg-green-500' : 
+            'bg-blue-500'
+        } text-white`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    },
+
+    // 验证邮箱
+    validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    },
+
+    // 生成邮件标题
+    generateEmailSubject(clientName, orderInfo) {
+        return `${clientName}//CNW Pre-Alert - ${orderInfo.hawb} - ${orderInfo.flight} ${orderInfo.date}PVG - ${orderInfo.mawb} - ${orderInfo.origin} - ${orderInfo.destination}`;
+    },
+
+    // 解析系统邮件
+    parseSystemEmail(emailData) {
+        // 解析邮件内容的函数
+        // 返回解析后的数据对象
+        return {
+            orderNumber: '',
+            flight: '',
+            date: '',
+            mawb: '',
+            origin: '',
+            destination: '',
+            weight: '',
+            pieces: ''
+            // 其他需要的字段
+        };
+    },
+
+    // 防抖函数
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+};

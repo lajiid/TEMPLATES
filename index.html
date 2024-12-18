@@ -296,3 +296,40 @@
                 <!-- 客户详情弹窗 -->
                 <div id="clientDetails" class="hidden">
                     <!-- 详情内容会通过 JavaScript 动态添加 -->
+</div>
+
+                <!-- 通知提示 -->
+                <div id="notification" class="hidden fixed top-4 right-4 p-4 rounded-lg shadow-lg"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 页面初始化脚本 -->
+    <script>
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查Gmail连接状态
+            checkGmailConnection();
+
+            // 绑定搜索表单事件
+            const searchForm = document.querySelector('form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    searchClients(e);
+                });
+            }
+
+            // 初始化其他功能...
+        });
+
+        // 隐藏详情页面
+        function closeDetails() {
+            const detailsContainer = document.getElementById('clientDetails');
+            if (detailsContainer) {
+                detailsContainer.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮件模板管理</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <!-- 引入JS文件 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/templates.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex">
+        <!-- 左侧导航栏 -->
+        <div class="w-64 bg-gray-800 text-white">
+            <div class="p-4">
+                <h1 class="text-xl font-bold">管理系统</h1>
+            </div>
+            <nav class="mt-4">
+                <a href="../index.html" class="flex items-center px-4 py-3 hover:bg-gray-700">
+                    <span class="mr-3">📋</span>
+                    客户管理
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 bg-gray-900">
+                    <span class="mr-3">📧</span>
+                    邮件模板
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 hover:bg-gray-700">
+                    <span class="mr-3">📊</span>
+                    数据统计
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 hover:bg-gray-700">
+                    <span class="mr-3">⚙️</span>
+                    系统设置
+                </a>
+            </nav>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="flex-1">
+            <nav class="bg-white shadow-lg">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <span class="text-xl font-semibold">邮件模板管理</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="toggleTemplateForm()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                新建模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="max-w-7xl mx-auto py-6 px-4">
+                <!-- 模板表单 -->
+                <div id="templateForm" class="hidden">
+                    <div class="bg-white shadow rounded-lg p-6 mb-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold">新建邮件模板</h2>
+                            <button onclick="toggleTemplateForm()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <form onsubmit="saveTemplate(event)">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">模板名称</label>
+                                    <input required name="templateName" type="text" 
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">贸易条款类型</label>
+                                    <select required name="type" 
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="EXW">EXW - 贵司自清关送货</option>
+                                        <option value="FCA">FCA - 自清关送货</option>
+                                        <option value="DAP">DAP - 贵司清关我们送货</option>
+                                        <option value="DDP">DDP - 我们清关送货</option>
+                                        <option value="DOOR_TO_PORT">DOOR TO PORT - 服务到港结束</option>
+                                        <option value="DOOR_TO_DOOR">DOOR TO DOOR - 全程服务</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">模板内容</label>
+                                    <div class="mt-1 text-xs text-gray-500 mb-2">
+                                        可用变量：{到达日期}, {件数}, {重量}, {磅数}, {hawb号}, {mawb号}, {航班号}, {到达时间}
+                                    </div>
+                                    <textarea required name="content" rows="10" 
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="在这里输入邮件内容..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button type="button" onclick="toggleTemplateForm()" 
+                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    取消
+                                </button>
+                                <button type="submit" 
+                                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                    保存
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 模板列表 -->
+                <div id="templateList" class="space-y-4">
+                    <!-- 模板列表将在这里动态显示 -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时显示模板列表
+        window.onload = function() {
+            loadTemplates();
+        }
+
+        // 显示/隐藏表单
+        function toggleTemplateForm() {
+            const form = document.getElementById('templateForm');
+            form.classList.toggle('hidden');
+        }
+
+        // 加载模板列表
+        function loadTemplates() {
+            const templates = templateService.getAllTemplates();
+            const container = document.getElementById('templateList');
+            
+            container.innerHTML = templates.map(template => `
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold">${template.name}</h3>
+                            <p class="text-gray-600">${template.type}</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="editTemplate('${template.id}')" 
+                                class="text-blue-500 hover:text-blue-700">编辑</button>
+                            <button onclick="deleteTemplate('${template.id}')"
+                                class="text-red-500 hover:text-red-700">删除</button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <pre class="text-sm text-gray-700 whitespace-pre-wrap">${template.content}</pre>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 保存模板
+        function saveTemplate(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const templateData = {
+                name: formData.get('templateName'),
+                type: formData.get('type'),
+                content: formData.get('content')
+            };
+            
+            templateService.addTemplate(templateData);
+            event.target.reset();
+            toggleTemplateForm();
+            loadTemplates();
+            utils.showNotification('模板保存成功', 'success');
+        }
+
+        // 编辑模板
+        function editTemplate(id) {
+            const template = templateService.getTemplate(id);
+            if (template) {
+                document.querySelector('[name="templateName"]').value = template.name;
+                document.querySelector('[name="type"]').value = template.type;
+                document.querySelector('[name="content"]').value = template.content;
+                toggleTemplateForm();
+            }
+        }
+
+        // 删除模板
+        function deleteTemplate(id) {
+            if (confirm('确定要删除这个模板吗？')) {
+                templateService.deleteTemplate(id);
+                loadTemplates();
+                utils.showNotification('模板已删除', 'success');
+            }
+        }
+    </script>
+</body>
+</html>

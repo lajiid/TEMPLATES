@@ -1,4 +1,19 @@
-// 在 template.html 的 script 部分添加：
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮件模板管理</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <!-- 引入所需的JS文件 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/gmail.js"></script>
+    <script src="../js/template-extractor.js"></script>
+    <script src="../js/template-manager.js"></script>
+    <script src="../js/draft-generator.js"></script>
+    // 在 template.html 的 script 部分添加：
 <script>
     // 显示Gmail提取表单
     function showGmailExtractForm() {
@@ -139,3 +154,75 @@
         loadTemplates();
     });
 </script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex">
+        <!-- 左侧导航栏 -->
+        <div class="w-64 bg-gray-800 text-white">
+            <!-- 导航内容 -->
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="flex-1">
+            <nav class="bg-white shadow-lg">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <span class="text-xl font-semibold">邮件模板管理</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="showGmailExtractForm()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                从Gmail提取模板
+                            </button>
+                            <button onclick="showNewTemplateForm()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                新建模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="max-w-7xl mx-auto py-6 px-4">
+                <!-- Gmail提取表单 -->
+                <div id="gmailExtractForm" class="hidden">
+                    <!-- Gmail提取表单内容 -->
+                </div>
+
+                <!-- 模板编辑表单 -->
+                <div id="templateForm" class="hidden">
+                    <!-- 模板编辑表单内容 -->
+                </div>
+
+                <!-- 模板列表 -->
+                <div id="templateList" class="space-y-4">
+                    <!-- 模板列表内容 -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 页面功能脚本
+        const templateManager = new TemplateManager();
+        const templateExtractor = new TemplateExtractor(gmailService);
+        const draftGenerator = new DraftGenerator(gmailService);
+
+        // 显示Gmail提取表单
+        function showGmailExtractForm() {
+            // 实现Gmail提取表单显示逻辑
+        }
+
+        // 显示新建模板表单
+        function showNewTemplateForm() {
+            // 实现新建模板表单显示逻辑
+        }
+
+        // 加载模板列表
+        function loadTemplates() {
+            // 实现模板列表加载逻辑
+        }
+
+        // 其他功能函数...
+    </script>
+</body>
+</html>

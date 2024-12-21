@@ -1,112 +1,83 @@
-// js/templates.js
 class TemplateService {
     constructor() {
         this.templates = JSON.parse(localStorage.getItem('templates') || '[]');
-        this.baseTemplates = {
-            EXW: {
-                name: "EXW基础模板",
-                type: "EXW",
-                description: "贵司自清关送货",
-                content: `Dear all,
-
-此票预报请见附件，尽量{到达日期}提供到通+舱单
-发票条款EXW，贵司自清关送货，麻烦邮件确认，谢谢
-
-PCS/WT: {件数} / {重量} kg ({磅数} lbs)
-HAWB：{hawb号}
-MAWB：{mawb号}
-FLIGHT: {航班号} ETA: {到达日期} {到达时间}`
-            },
-            FCA: {
-                name: "FCA基础模板",
-                type: "FCA",
-                description: "自清关送货",
-                content: `Dear all,
-
-此票预报请见附件，尽量{到达日期}提供到通+舱单
-发票条款FCA，自清关送货，麻烦邮件确认，谢谢
-
-PCS/WT: {件数} / {重量} kg ({磅数} lbs)
-HAWB：{hawb号}
-MAWB：{mawb号}
-FLIGHT: {航班号} ETA: {到达日期} {到达时间}`
-            },
-            DAP: {
-                name: "DAP基础模板",
-                type: "DAP",
-                description: "贵司清关我们送货",
-                content: `Dear all,
-
-此票预报请见附件，尽量{到达日期}提供到通+舱单
-发票条款DAP，贵司清关我们送货，麻烦邮件确认，谢谢
-
-PCS/WT: {件数} / {重量} kg ({磅数} lbs)
-HAWB：{hawb号}
-MAWB：{mawb号}
-FLIGHT: {航班号} ETA: {到达日期} {到达时间}`
-            }
-            // 可以继续添加其他基础模板
-        };
     }
 
-    // 获取所有模板
-    getAllTemplates() {
-        return [...Object.values(this.baseTemplates), ...this.templates];
-    }
-
-    // 添加新模板
-    addTemplate(templateData) {
+    createTemplate(name, variables, content) {
         const template = {
             id: Date.now(),
-            createdAt: new Date().toISOString(),
-            ...templateData
+            name,
+            variables,
+            content,
+            createdAt: new Date().toISOString()
         };
         this.templates.push(template);
         this.saveTemplates();
+        utils.showNotification('模板创建成功', 'success');
         return template;
     }
 
-    // 更新模板
-    updateTemplate(id, data) {
-        const index = this.templates.findIndex(t => t.id === id);
-        if (index !== -1) {
-            this.templates[index] = { ...this.templates[index], ...data };
-            this.saveTemplates();
-            return true;
+    async extractTemplateFromGmail(orderNumber) {
+        try {
+            const emailContent = await gmailService.searchOrder(orderNumber);
+            
+            const variables = this.identifyVariables(emailContent);
+            
+            return {
+                variables,
+                content: emailContent
+            };
+        } catch (error) {
+            console.error('提取Gmail模板失败:', error);
+            return null;
         }
-        return false;
     }
 
-    // 删除模板
-    deleteTemplate(id) {
-        this.templates = this.templates.filter(t => t.id !== id);
-        this.saveTemplates();
+    identifyVariables(content) {
+        const potentialVariables = [
+            { name: 'clientName', type: 'text' },
+            { name: 'email', type: 'email' },
+            { name: 'orderNumber', type: 'text' },
+            { name: 'phone', type: 'text' }
+        ];
+
+        return potentialVariables.filter(variable => 
+            content.toLowerCase().includes(variable.name.toLowerCase())
+        );
     }
 
-    // 获取模板
-    getTemplate(id) {
-        return this.templates.find(t => t.id === id) || this.baseTemplates[id];
-    }
-
-    // 保存模板
     saveTemplates() {
         localStorage.setItem('templates', JSON.stringify(this.templates));
     }
-
-    // 应用模板
-    applyTemplate(templateId, data) {
-        const template = this.getTemplate(templateId);
-        if (!template) return null;
-
-        let content = template.content;
-        // 替换所有变量
-        Object.entries(data).forEach(([key, value]) => {
-            content = content.replace(new RegExp(`{${key}}`, 'g'), value);
-        });
-
-        return content;
-    }
 }
 
-// 创建全局实例
 const templateService = new TemplateService();
+
+function extractTemplateFromGmail(orderNumber) {
+    templateService.extractTemplateFromGmail(orderNumber)
+        .then(result => {
+            if (result) {
+                document.getElementById('templateName').value = `订单${orderNumber}模板`;
+                document.getElementById('templateContent').value = result.content;
+                
+                const container = document.getElementById('variablesContainer');
+                container.innerHTML = '';
+                result.variables.forEach(variable => {
+                    const variableDiv = document.createElement('div');
+                    variableDiv.innerHTML = `
+                        <div class="flex space-x-2">
+                            <input type="text" value="${variable.name}" placeholder="变量名" class="variable-name flex-1 rounded-md border-gray-300">
+                            <select class="variable-type rounded-md border-gray-300">
+                                <option value="text" ${variable.type === 'text' ? 'selected' : ''}>文本</option>
+                                <option value="number" ${variable.type === 'number' ? 'selected' : ''}>数字</option>
+                                <option value="email" ${variable.type === 'email' ? 'selected' : ''}>邮箱</option>
+                            </select>
+                        </div>
+                    `;
+                    container.appendChild(variableDiv);
+                });
+
+                openTemplateModal();
+            }
+        });
+}

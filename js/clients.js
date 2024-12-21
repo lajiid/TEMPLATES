@@ -3,7 +3,6 @@ class ClientService {
         this.clients = JSON.parse(localStorage.getItem('clients') || '[]');
     }
 
-    // 添加客户
     addClient(clientData) {
         const client = {
             id: Date.now(),
@@ -15,7 +14,6 @@ class ClientService {
         return client;
     }
 
-    // 更新客户
     updateClient(id, data) {
         const index = this.clients.findIndex(c => c.id === id);
         if (index !== -1) {
@@ -26,13 +24,11 @@ class ClientService {
         return false;
     }
 
-    // 删除客户
     deleteClient(id) {
         this.clients = this.clients.filter(c => c.id !== id);
         this.saveClients();
     }
 
-    // 搜索客户
     searchClients(criteria) {
         return this.clients.filter(client => {
             const nameMatch = !criteria.name || 
@@ -45,24 +41,19 @@ class ClientService {
         });
     }
 
-    // 获取客户详情
     getClientDetails(id) {
         return this.clients.find(c => c.id === id);
     }
 
-    // 保存到localStorage
     saveClients() {
         localStorage.setItem('clients', JSON.stringify(this.clients));
     }
 
-    // 编辑客户
     editClient(id) {
         const client = this.getClientDetails(id);
         if (client) {
-            // 填充表单
             document.getElementById('clientForm').classList.remove('hidden');
             
-            // 获取表单中的输入元素
             const form = document.querySelector('#clientForm form');
             form.querySelector('input[name="clientName"]').value = client.clientName;
             form.querySelector('input[name="contactPerson"]').value = client.contactPerson;
@@ -73,10 +64,18 @@ class ClientService {
         }
     }
 
-    // 查看客户详情
     viewClientDetails(id) {
         const client = this.getClientDetails(id);
         if (client) {
+            const filesHtml = client.files && client.files.length > 0 
+                ? client.files.map(file => `
+                    <div class="flex justify-between items-center bg-gray-100 p-2 rounded">
+                        <span>${file.name}</span>
+                        <span class="text-sm text-gray-500">${(file.size / 1024).toFixed(2)} KB</span>
+                    </div>
+                `).join('')
+                : '<p class="text-gray-500">无相关文件</p>';
+
             const detailsHtml = `
                 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
@@ -101,10 +100,9 @@ class ClientService {
                             </div>
                             
                             <div>
-                                <h3 class="font-medium mb-2">其他信息</h3>
-                                <div class="bg-gray-50 p-3 rounded">
-                                    <p><span class="font-medium">创建时间：</span>${new Date(client.createdAt).toLocaleString()}</p>
-                                    <p class="mt-2"><span class="font-medium">备注：</span>${client.notes || '暂无备注'}</p>
+                                <h3 class="font-medium mb-2">相关文件</h3>
+                                <div class="space-y-2">
+                                    ${filesHtml}
                                 </div>
                             </div>
                         </div>
@@ -128,10 +126,8 @@ class ClientService {
     }
 }
 
-// 创建全局实例
 const clientService = new ClientService();
 
-// 全局函数，便于在HTML中直接调用
 function editClient(id) {
     clientService.editClient(id);
 }

@@ -1,4 +1,3 @@
-// js/clients.js
 class ClientService {
     constructor() {
         this.clients = JSON.parse(localStorage.getItem('clients') || '[]');
@@ -36,9 +35,12 @@ class ClientService {
     // 搜索客户
     searchClients(criteria) {
         return this.clients.filter(client => {
-            const nameMatch = !criteria.name || client.clientName.toLowerCase().includes(criteria.name.toLowerCase());
-            const emailMatch = !criteria.email || client.email.toLowerCase().includes(criteria.email.toLowerCase());
-            const orderMatch = !criteria.orderId || client.orderId === criteria.orderId;
+            const nameMatch = !criteria.name || 
+                client.clientName.toLowerCase().includes(criteria.name.toLowerCase());
+            const emailMatch = !criteria.email || 
+                client.email.toLowerCase().includes(criteria.email.toLowerCase());
+            const orderMatch = !criteria.orderId || 
+                client.orderId === criteria.orderId;
             return nameMatch && emailMatch && orderMatch;
         });
     }
@@ -53,8 +55,26 @@ class ClientService {
         localStorage.setItem('clients', JSON.stringify(this.clients));
     }
 
-    // 显示客户详情
-    displayClientDetails(id) {
+    // 编辑客户
+    editClient(id) {
+        const client = this.getClientDetails(id);
+        if (client) {
+            // 填充表单
+            document.getElementById('clientForm').classList.remove('hidden');
+            
+            // 获取表单中的输入元素
+            const form = document.querySelector('#clientForm form');
+            form.querySelector('input[name="clientName"]').value = client.clientName;
+            form.querySelector('input[name="contactPerson"]').value = client.contactPerson;
+            form.querySelector('input[name="email"]').value = client.email;
+            form.querySelector('input[name="phone"]').value = client.phone;
+            form.querySelector('input[name="address"]').value = client.address || '';
+            form.querySelector('textarea[name="notes"]').value = client.notes || '';
+        }
+    }
+
+    // 查看客户详情
+    viewClientDetails(id) {
         const client = this.getClientDetails(id);
         if (client) {
             const detailsHtml = `
@@ -76,32 +96,51 @@ class ClientService {
                                     <p><span class="font-medium">联系人：</span>${client.contactPerson}</p>
                                     <p><span class="font-medium">邮箱：</span>${client.email}</p>
                                     <p><span class="font-medium">电话：</span>${client.phone}</p>
-                                    <p><span class="font-medium">地址：</span>${client.address}</p>
+                                    <p><span class="font-medium">地址：</span>${client.address || '暂无'}</p>
                                 </div>
                             </div>
                             
                             <div>
-                                <h3 class="font-medium mb-2">相关文件</h3>
-                                <div class="space-y-2">
-                                    ${client.files ? `<p>${client.files}</p>` : '<p class="text-gray-500">无相关文件</p>'}
+                                <h3 class="font-medium mb-2">其他信息</h3>
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p><span class="font-medium">创建时间：</span>${new Date(client.createdAt).toLocaleString()}</p>
+                                    <p class="mt-2"><span class="font-medium">备注：</span>${client.notes || '暂无备注'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="font-medium mb-2">备注</h3>
-                            <div class="bg-gray-50 p-3 rounded">
-                                ${client.notes || '无备注信息'}
-                            </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button onclick="editClient(${client.id})" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                编辑
+                            </button>
+                            <button onclick="closeDetails()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                                关闭
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
-            document.getElementById('clientDetails').innerHTML = detailsHtml;
-            document.getElementById('clientDetails').classList.remove('hidden');
+            
+            const detailsContainer = document.getElementById('clientDetails');
+            detailsContainer.innerHTML = detailsHtml;
+            detailsContainer.classList.remove('hidden');
         }
     }
 }
 
 // 创建全局实例
 const clientService = new ClientService();
+
+// 全局函数，便于在HTML中直接调用
+function editClient(id) {
+    clientService.editClient(id);
+}
+
+function viewDetails(id) {
+    clientService.viewClientDetails(id);
+}
+
+function closeDetails() {
+    const detailsContainer = document.getElementById('clientDetails');
+    detailsContainer.classList.add('hidden');
+}

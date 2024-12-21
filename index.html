@@ -68,31 +68,41 @@
     }
 
     function saveClient(event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const clientData = {
-            id: Date.now(),
-            createdAt: new Date().toISOString()
-        };
-        
-        for (let [key, value] of formData.entries()) {
-            if (key !== 'files') {
-                clientData[key] = value;
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const clientData = {
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        files: [] // 初始化文件数组
+    };
+    
+    for (let [key, value] of formData.entries()) {
+        if (key === 'files') {
+            // 处理多文件
+            if (value && value.size > 0) {
+                clientData.files.push({
+                    name: value.name,
+                    size: value.size,
+                    type: value.type,
+                    lastModified: value.lastModified
+                });
             }
+        } else if (key !== 'files') {
+            clientData[key] = value;
         }
-        
-        let clients = JSON.parse(localStorage.getItem('clients') || '[]');
-        clients.push(clientData);
-        localStorage.setItem('clients', JSON.stringify(clients));
-        
-        event.target.reset();
-        if (document.getElementById('fileList')) {
-            document.getElementById('fileList').textContent = '未选择文件';
-        }
-        toggleForm();
-        utils.showNotification('客户信息保存成功', 'success');
     }
-
+    
+    let clients = JSON.parse(localStorage.getItem('clients') || '[]');
+    clients.push(clientData);
+    localStorage.setItem('clients', JSON.stringify(clients));
+    
+    event.target.reset();
+    if (document.getElementById('fileList')) {
+        document.getElementById('fileList').textContent = '未选择文件';
+    }
+    toggleForm();
+    utils.showNotification('客户信息保存成功', 'success');
+}
     function searchClients(event) {
         event.preventDefault();
         const searchName = document.getElementById('searchName').value;
